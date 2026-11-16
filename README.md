@@ -30,13 +30,13 @@ The application features a **hybrid architecture**: upon startup, it attempts to
 > *Note: All screenshots below show simulated demo entries with fictitious coordinates for demonstration purposes.*
 
 <div align="center">
-  <img src="assets/screenshot-map.png.png" alt="SILK Main Map & Asset List" width="100%" />
+  <img src="SILK/assets/screenshot-map.png.png" alt="SILK Main Map & Asset List" width="100%" />
   <p><em>Main GIS map interface with collapsible asset drawer and status-coded markers</em></p>
 </div>
 
 | Asset Details & Maintenance Logbook | Adding a New Railway Building / Asset |
 | :---: | :---: |
-| <img src="assets/screenshot-details.png" alt="Asset Details & Logbook" width="100%" /> | <img src="assets/screenshot-modal.png" alt="Add Asset Modal" width="100%" /> |
+| <img src="SILK/assets/screenshot-details.png" alt="Asset Details & Logbook" width="100%" /> | <img src="SILK/assets/screenshot-modal.png" alt="Add Asset Modal" width="100%" /> |
 | *Service logbook & one-click Google Maps GPS routing* | *19 specialized railway categories (Signal Boxes, LCS, SRK, GSM-R)* |
 
 ---

@@ -2,7 +2,7 @@
 SILK (Spatial Infrastructure &amp; Line Keeper) by VPanda Studio — interactive GIS web application for railway signaling (SRK), power, and GSM-R telecom asset management with offline JSON sync and maintenance logbook.
 
 <div align="center">
-  <img src="assets/SILK_Logo.png" alt="SILK by VPanda Logo" width="110" />
+  <img src="SILK/assets/SILK_Logo.png" alt="SILK by VPanda Logo" width="110" />
   <h1>SILK by VPanda</h1>
   <p><strong>Spatial Infrastructure &amp; Line Keeper</strong></p>
   <p>

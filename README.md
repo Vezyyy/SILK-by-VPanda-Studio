@@ -1,21 +1,34 @@
-# SILK-by-VPanda-Studio
-SILK (Spatial Infrastructure &amp; Line Keeper) by VPanda Studio — interactive GIS web application for railway signaling (SRK), power, and GSM-R telecom asset management with offline JSON sync and maintenance logbook.
-
 <div align="center">
-  <img src="SILK/assets/VPanda Logo2.png" alt="SILK by VPanda Logo" width="250" />
+  <img src="assets/VPanda%20Logo2.png" alt="VPanda Studio Logo" width="220" />
   <h1>SILK by VPanda</h1>
-  <img src="SILK/assets/SILK_Logo.png" alt="SILK by VPanda Logo" width="250" />
+  <img src="assets/SILK_Logo.png" alt="SILK by VPanda Logo" width="140" />
   <p><strong>Spatial Infrastructure &amp; Line Keeper</strong></p>
   <p>
     Interactive GIS &amp; Maintenance Management Web Application for Railway Signaling (SRK), Power, and Telecom Infrastructure.
   </p>
 </div>
 
+---
+
 ## Overview
 
 **SILK (Spatial Infrastructure & Line Keeper)** is a lightweight, browser-based GIS asset management and maintenance logbook application designed for railway signaling (SRK), power supply, and GSM-R telecommunication teams.
 
 The application features a **hybrid architecture**: on startup, it attempts to synchronize with a configured REST/JSON server endpoint and seamlessly falls back to **100% offline local mode** using local `.json` database files and browser storage (`localStorage`).
+
+## Screenshots
+
+> *Note: All screenshots below show simulated demo/test entries with fictitious coordinates.*
+
+<div align="center">
+  <img src="assets/screenshot-map.png" alt="SILK Main Map & Asset List" width="100%" />
+  <p><em>Main GIS map interface with collapsible asset drawer and status-coded markers</em></p>
+</div>
+
+| Asset Details & Maintenance Logbook | Adding a New Railway Building / Asset |
+| :---: | :---: |
+| <img src="assets/screenshot-details.png" alt="Asset Details & Logbook" width="100%" /> | <img src="assets/screenshot-modal.png" alt="Add Asset Modal" width="100%" /> |
+| *Service logbook & one-click Google Maps GPS routing* | *19 specialized railway categories (Signal Boxes, LCS, SRK, GSM-R)* |
 
 ## Key Features
 
@@ -35,11 +48,15 @@ The application features a **hybrid architecture**: on startup, it attempts to s
 ## Project Structure
 
 ```text
-SILK-by-VPanda/
-├── index.html          # Main standalone application (HTML5, Tailwind CSS, Leaflet.js)
+SILK-by-VPanda-Studio/
+├── index.html                 # Main standalone application (HTML5, Tailwind CSS, Leaflet.js)
 ├── assets/
-│   ├── SILK_Logo.png   # Application & splash screen logo
-│   └── favicon.ico     # Browser tab icon
-├── .gitignore          # Prevents accidental upload of sensitive .json asset files
-├── LICENSE             # MIT License
-└── README.md           # Project documentation
+│   ├── SILK_Logo.png          # Application & splash screen logo
+│   ├── VPanda Logo2.png       # Studio logo
+│   ├── favicon.ico            # Browser tab icon
+│   ├── screenshot-map.png     # UI preview — map & drawer
+│   ├── screenshot-details.png # UI preview — maintenance logbook & GPS navigation
+│   └── screenshot-modal.png   # UI preview — asset creation modal
+├── .gitignore                 # Prevents accidental upload of sensitive .json asset files
+├── LICENSE                    # MIT License
+└── README.md                  # Project documentation

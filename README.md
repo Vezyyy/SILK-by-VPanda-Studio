@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="SILK/assets/VPanda Logo2.png" alt="SILK by VPanda Logo" width="250" />
+  <img src="SILK/assets/VPanda Logo2.png" alt="SILK by VPanda Logo" width="220" />
   <h1>SILK by VPanda</h1>
-  <img src="SILK/assets/SILK_Logo.png" alt="SILK by VPanda Logo" width="250" />
+  <img src="SILK/assets/SILK_Logo.png" alt="SILK by VPanda Logo" width="140" />
   <p><strong>Spatial Infrastructure &amp; Line Keeper</strong></p>
   <p>
     Interactive GIS &amp; Maintenance Management Web Application for Railway Signaling (SRK), Power, and Telecom Infrastructure.

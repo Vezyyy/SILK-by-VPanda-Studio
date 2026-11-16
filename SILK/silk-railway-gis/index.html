@@ -398,6 +398,11 @@
                 <span id="unsavedCounterBadge" class="hidden px-1.5 py-0.2 bg-amber-400 text-slate-950 rounded-full text-[10px] font-extrabold">0</span>
             </button>
 
+            <button type="button" onclick="toggleLiveGpsTracking()" id="gpsToggleHeaderBtn" class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer shrink-0" title="Włącz / wyłącz śledzenie GPS na żywo">
+                <svg class="w-3.5 h-3.5 text-sky-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                <span class="hidden md:inline" data-i18n="gpsBtn">📍 GPS</span>
+            </button>
+
             <button type="button" onclick="openDeviceFormModal(null)" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition flex items-center gap-1 cursor-pointer shrink-0">
                 <span class="sm:hidden" data-i18n="addDeviceBtnShort">+ Dodaj</span>
                 <span class="hidden sm:inline" data-i18n="addDeviceBtn">+ Dodaj urządzenie</span>
@@ -407,6 +412,13 @@
 
     <!-- GŁÓWNY KONTENER MAPY -->
     <div id="mapViewport" class="bg-slate-200">
+
+        <!-- PŁYWAJĄCY BANER / PRZYCISK DODAWANIA W MIEJSCU GPS -->
+        <div id="gpsAddBanner" class="hidden absolute top-3 left-1/2 -translate-x-1/2 z-[1150] bg-emerald-600 text-white px-4 py-2 rounded-full shadow-xl text-xs font-extrabold flex items-center gap-2.5 animate-fade-slide">
+            <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+            <span data-i18n="gpsBannerText">Twoja pozycja GPS jest śledzona na mapie</span>
+            <button type="button" onclick="addAssetAtCurrentGps()" class="ml-2 px-3 py-1 bg-white text-emerald-900 rounded-full text-xs font-black shadow hover:bg-emerald-50 transition cursor-pointer" data-i18n="addAtGpsBtn">+ Dodaj w miejscu GPS</button>
+        </div>
 
         <!-- PŁYWAJĄCY PRZYCISK OTWIERANIA PANELU -->
         <button id="floatingOpenBtn" type="button" onclick="openDrawer()" class="hidden absolute top-3 left-3 z-[900] bg-white/95 hover:bg-white text-slate-900 px-3.5 py-2.5 rounded-2xl shadow-xl border border-slate-200 backdrop-blur-md text-xs font-extrabold flex items-center gap-2 transition animate-fade-slide cursor-pointer">
@@ -734,7 +746,6 @@
         const DEFAULT_SERVER_ENDPOINT = '';
         let currentLang = 'pl';
 
-        // Automatyczna obsługa rozszerzeń dla assets/SILK_Logo (.png -> .svg -> .jpg -> .webp -> wektor zastępczy)
         function handleAssetLogoFallback(imgEl) {
             const step = parseInt(imgEl.dataset.fallbackStep || '0', 10);
             const candidates = [
@@ -876,7 +887,12 @@
                 badgeUnsaved: 'Niezapisane zmiany',
                 badgeClickSave: 'kliknij Zapisz',
                 badgeDisconnectedCached: 'Plik lokalny / pamięć',
-                badgeDisconnectedEmpty: 'Plik lokalny / pamięć'
+                badgeDisconnectedEmpty: 'Plik lokalny / pamięć',
+                gpsBtn: '📍 GPS',
+                gpsActive: 'GPS aktywny',
+                addAtGpsBtn: '+ Dodaj w miejscu GPS',
+                gpsError: 'Brak sygnału GPS lub brak zgody na lokalizację',
+                gpsBannerText: 'Twoja pozycja GPS jest śledzona na mapie'
             },
             en: {
                 splashStep1: '1. Loading map modules and application logo',
@@ -994,7 +1010,12 @@
                 badgeUnsaved: 'Unsaved changes',
                 badgeClickSave: 'click Save',
                 badgeDisconnectedCached: 'Local file / storage',
-                badgeDisconnectedEmpty: 'Local file / storage'
+                badgeDisconnectedEmpty: 'Local file / storage',
+                gpsBtn: '📍 GPS',
+                gpsActive: 'GPS Active',
+                addAtGpsBtn: '+ Add at GPS',
+                gpsError: 'GPS signal unavailable or location permission denied',
+                gpsBannerText: 'Your GPS position is tracked on the map'
             }
         };
 
@@ -2285,7 +2306,6 @@
             const lngVal = Number(dev.lng);
             document.getElementById('detailCoords').textContent = `${latVal.toFixed(6)}, ${lngVal.toFixed(6)}`;
 
-            // Aktualizacja linku nawigacji GPS w Google Maps
             const navBtn = document.getElementById('detailGoogleMapsNavBtn');
             if (navBtn) {
                 navBtn.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(latVal + ',' + lngVal)}`;
@@ -2693,6 +2713,128 @@
                 const bounds = L.latLngBounds(filtered.map(d => [d.lat, d.lng]));
                 leafletMap.fitBounds(bounds, { padding: [70, 70], maxZoom: 16 });
             }
+        }
+
+        // =========================================================================
+        // 10. ŚLEDZENIE GPS NA ŻYWO I DODAWANIE W MIEJSCU POBYTU
+        // =========================================================================
+        let isGpsTrackingActive = false;
+        let gpsWatchId = null;
+        let currentGpsCoords = null;
+        let gpsMarker = null;
+        let gpsAccuracyCircle = null;
+
+        function toggleLiveGpsTracking() {
+            if (!navigator.geolocation) {
+                showToast(currentLang === 'en' ? 'Geolocation is not supported by your browser.' : 'Geolokalizacja nie jest obsługiwana przez Twoją przeglądarkę.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('gpsToggleHeaderBtn');
+            const banner = document.getElementById('gpsAddBanner');
+
+            if (isGpsTrackingActive) {
+                if (gpsWatchId !== null) {
+                    navigator.geolocation.clearWatch(gpsWatchId);
+                    gpsWatchId = null;
+                }
+                isGpsTrackingActive = false;
+                if (gpsMarker && leafletMap) {
+                    leafletMap.removeLayer(gpsMarker);
+                    gpsMarker = null;
+                }
+                if (gpsAccuracyCircle && leafletMap) {
+                    leafletMap.removeLayer(gpsAccuracyCircle);
+                    gpsAccuracyCircle = null;
+                }
+                if (banner) banner.classList.add('hidden');
+                if (btn) {
+                    btn.className = 'p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer shrink-0';
+                }
+                showToast(currentLang === 'en' ? 'Live GPS tracking stopped.' : 'Wyłączono śledzenie GPS na żywo.', 'info');
+            } else {
+                isGpsTrackingActive = true;
+                if (btn) {
+                    btn.className = 'p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer shrink-0 animate-pulse';
+                }
+                showToast(currentLang === 'en' ? 'Acquiring GPS position...' : 'Pobieranie pozycji GPS...', 'info');
+
+                gpsWatchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+                        currentGpsCoords = { lat, lng };
+
+                        if (banner) banner.classList.remove('hidden');
+
+                        if (leafletMap) {
+                            if (!gpsMarker) {
+                                const gpsHtml = `
+                                    <div class="relative flex items-center justify-center pointer-events-none">
+                                        <div class="w-6 h-6 rounded-full bg-blue-500/30 animate-ping absolute"></div>
+                                        <div class="w-4 h-4 rounded-full bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+                                        </div>
+                                    </div>
+                                `;
+                                const gpsIcon = L.divIcon({
+                                    html: gpsHtml,
+                                    className: 'leaflet-div-icon',
+                                    iconSize: [24, 24],
+                                    iconAnchor: [12, 12]
+                                });
+                                gpsMarker = L.marker([lat, lng], { icon: gpsIcon, zIndexOffset: 9999 }).addTo(leafletMap);
+                                leafletMap.setView([lat, lng], Math.max(leafletMap.getZoom(), 16));
+                            } else {
+                                gpsMarker.setLatLng([lat, lng]);
+                            }
+
+                            if (!gpsAccuracyCircle) {
+                                gpsAccuracyCircle = L.circle([lat, lng], {
+                                    radius: accuracy,
+                                    color: '#2563eb',
+                                    weight: 1,
+                                    fillColor: '#3b82f6',
+                                    fillOpacity: 0.15
+                                }).addTo(leafletMap);
+                            } else {
+                                gpsAccuracyCircle.setLatLng([lat, lng]);
+                                gpsAccuracyCircle.setRadius(accuracy);
+                            }
+                        }
+                    },
+                    (error) => {
+                        console.warn('GPS error:', error);
+                        showToast(t('gpsError'), 'error');
+                        isGpsTrackingActive = false;
+                        if (btn) btn.className = 'p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer shrink-0';
+                        if (banner) banner.classList.add('hidden');
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 5000,
+                        timeout: 15000
+                    }
+                );
+            }
+        }
+
+        function addAssetAtCurrentGps() {
+            if (!currentGpsCoords) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        currentGpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                        openDeviceFormModal(null, currentGpsCoords.lat, currentGpsCoords.lng);
+                    },
+                    (err) => {
+                        showToast(t('gpsError'), 'error');
+                    },
+                    { enableHighAccuracy: true }
+                );
+                return;
+            }
+            openDeviceFormModal(null, currentGpsCoords.lat, currentGpsCoords.lng);
         }
 
         // =========================================================================

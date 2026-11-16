@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="assets/VPanda Logo2.png" alt="VPanda Studio Logo" width="180" />
+  <img src="SILK/assets/VPanda Logo2.png" alt="VPanda Studio Logo" width="180" />
   <h1>SILK by VPanda</h1>
-  <img src="assets/SILK_Logo.png" alt="SILK by VPanda Logo" width="130" />
+  <img src="SILK/assets/SILK_Logo.png" alt="SILK by VPanda Logo" width="130" />
   <p><strong>Spatial Infrastructure &amp; Line Keeper</strong></p>
   
   <p>

@@ -58,7 +58,19 @@ The application features a **hybrid architecture**: upon startup, it attempts to
 
 ---
 
+🔒 Critical Infrastructure Security Notice
+WARNING: This public repository contains only the source code of the application and does not include any real railway infrastructure coordinates or operational data.
+
+Users are strictly prohibited from uploading, sharing, or committing .json export files containing real coordinates, technical parameters, photographs, or fault records of critical railway infrastructure to public repositories.
+
+🚀 Running the Application
+Online (GitHub Pages): Open repository Settings → Pages, select Branch: main, folder / (root), and click Save.
+
+Locally / Offline: Clone or download the repository and open index.html directly in any modern browser (Chrome, Edge, Firefox, Safari).
+
 ## 🗂️ Project Structure
+
+---
 
 ```text
 SILK-by-VPanda-Studio/
@@ -74,13 +86,3 @@ SILK-by-VPanda-Studio/
 ├── .gitignore                   # Prevents accidental upload of sensitive .json asset files
 ├── LICENSE                      # MIT License
 └── README.md                    # Project documentation
-
-🔒 Critical Infrastructure Security Notice
-WARNING: This public repository contains only the source code of the application and does not include any real railway infrastructure coordinates or operational data.
-
-Users are strictly prohibited from uploading, sharing, or committing .json export files containing real coordinates, technical parameters, photographs, or fault records of critical railway infrastructure to public repositories.
-
-🚀 Running the Application
-Online (GitHub Pages): Open repository Settings → Pages, select Branch: main, folder / (root), and click Save.
-
-Locally / Offline: Clone or download the repository and open index.html directly in any modern browser (Chrome, Edge, Firefox, Safari).

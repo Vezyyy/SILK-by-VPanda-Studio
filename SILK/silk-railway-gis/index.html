@@ -42,7 +42,7 @@
         #mapViewport {
             position: relative;
             width: 100%;
-            height: calc(100vh - 84px);
+            flex: 1 1 auto;
             overflow: hidden;
         }
         #leafletMapContainer {
@@ -198,7 +198,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased overflow-hidden h-screen w-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased overflow-hidden h-screen w-screen flex flex-col justify-between">
 
     <!-- EKRAN ŁADOWANIA (SPLASH SCREEN Z LOGO Z FOLDERU ASSETS: assets/SILK_Logo) -->
     <div id="splashScreen" class="fixed inset-0 z-[5000] bg-slate-950 flex flex-col items-center justify-center p-6 text-white select-none">
@@ -555,8 +555,16 @@
                             <form id="repairNoteForm" onsubmit="handleAddRepairNote(event)" class="space-y-2.5">
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <div>
-                                        <label for="noteAuthor" class="block text-[11px] font-semibold text-slate-700 mb-1" data-i18n="authorLabel">Automatyk / Technik *</label>
-                                        <input type="text" id="noteAuthor" required placeholder="np. Jan Kowalski (Automatyk SRK)" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <label for="noteAuthorRole" class="block text-[11px] font-semibold text-slate-700 mb-1" data-i18n="roleLabel">Stanowisko / Rola *</label>
+                                        <select id="noteAuthorRole" onchange="onRoleSelectChange()" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-1.5">
+                                            <option value="Automatyk">Automatyk</option>
+                                            <option value="Drogowiec">Drogowiec</option>
+                                            <option value="Dyżurny">Dyżurny Ruchu</option>
+                                            <option value="Zawiadowca">Zawiadowca</option>
+                                            <option value="Naczelnik">Naczelnik</option>
+                                            <option value="Inny">Inne stanowisko...</option>
+                                        </select>
+                                        <input type="text" id="noteAuthor" required placeholder="np. Jan Kowalski (Automatyk)" class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     </div>
                                     <div>
                                         <label for="noteStatus" class="block text-[11px] font-semibold text-slate-700 mb-1" data-i18n="statusAfterLabel">Status po czynnościach</label>
@@ -831,6 +839,7 @@
                 noTechDesc: 'Brak dodatkowego opisu technicznego.',
                 repairLogTitle: 'Dziennik napraw i usterek SRK',
                 nowBtn: 'Teraz',
+                roleLabel: 'Stanowisko / Rola *',
                 authorLabel: 'Automatyk / Technik *',
                 authorPlaceholder: 'np. Jan Kowalski (Automatyk SRK)',
                 statusAfterLabel: 'Status po czynnościach',
@@ -873,7 +882,7 @@
                 noNotesItem: 'Brak wpisów w dzienniku napraw',
                 noNotesHistoryTitle: 'Brak wpisów w dzienniku napraw dla tego obiektu.',
                 noNotesHistoryDesc: 'Użyj formularza powyżej, aby zarejestrować czynność serwisową.',
-                technicianPrefix: 'Automatyk / Technik:',
+                technicianPrefix: 'Autor / Stanowisko:',
                 photoPlaceholderHint: 'Kliknij „Zmień zdjęcie”, aby dodać fotografię obiektu',
                 statusOk: 'Sprawny',
                 statusWarn: 'Monitorować',
@@ -954,6 +963,7 @@
                 noTechDesc: 'No additional technical description provided.',
                 repairLogTitle: 'Maintenance & Fault Logbook',
                 nowBtn: 'Now',
+                roleLabel: 'Role / Position *',
                 authorLabel: 'Technician / Engineer *',
                 authorPlaceholder: 'e.g. John Doe (Signaling Engineer)',
                 statusAfterLabel: 'Status after service',
@@ -996,7 +1006,7 @@
                 noNotesItem: 'No maintenance entries yet',
                 noNotesHistoryTitle: 'No maintenance or fault entries for this asset.',
                 noNotesHistoryDesc: 'Use the form above to record a maintenance action.',
-                technicianPrefix: 'Technician:',
+                technicianPrefix: 'Role / Author:',
                 photoPlaceholderHint: 'Click "Change photo" to upload a building or asset photograph',
                 statusOk: 'Operational',
                 statusWarn: 'Monitor',
@@ -1288,6 +1298,7 @@
         // =========================================================================
         const LOCAL_BACKUP_KEY = 'silk_vpanda_assets_v1';
         const AUTHOR_STORAGE_KEY = 'silk_vpanda_author_v1';
+        const ROLE_STORAGE_KEY = 'silk_vpanda_role_v1';
         const LOGO_STORAGE_KEY = 'silk_vpanda_custom_logo_v1';
         const LANG_STORAGE_KEY = 'silk_vpanda_lang_v1';
         const TERMS_ACCEPTED_KEY = 'silk_vpanda_terms_accepted_v1';
@@ -1336,6 +1347,14 @@
             const savedAuthor = localStorage.getItem(AUTHOR_STORAGE_KEY);
             if (savedAuthor) {
                 document.getElementById('noteAuthor').value = savedAuthor;
+            }
+            const savedRole = localStorage.getItem(ROLE_STORAGE_KEY);
+            if (savedRole) {
+                const roleSel = document.getElementById('noteAuthorRole');
+                if (roleSel) {
+                    roleSel.value = savedRole;
+                    onRoleSelectChange();
+                }
             }
 
             if (window.innerWidth < 640) {
@@ -2343,6 +2362,20 @@
             document.getElementById('noteTime').value = `${hh}:${min}`;
         }
 
+        function onRoleSelectChange() {
+            const roleSel = document.getElementById('noteAuthorRole');
+            const authorInput = document.getElementById('noteAuthor');
+            if (!roleSel || !authorInput) return;
+            const role = roleSel.value;
+            if (role === 'Inny') {
+                authorInput.value = '';
+                authorInput.placeholder = 'np. Imię Nazwisko (Stanowisko)';
+            } else {
+                const currentName = authorInput.value.replace(/^[^—]+(?:\s*—\s*|\s*\(\s*)/, '').trim();
+                authorInput.value = currentName ? `${currentName} (${role})` : `Jan Kowalski (${role})`;
+            }
+        }
+
         async function handleAddRepairNote(event) {
             event.preventDefault();
             if (!selectedDeviceId) return;
@@ -2350,6 +2383,7 @@
             const dev = devices.find(d => d.id === selectedDeviceId);
             if (!dev) return;
 
+            const role = document.getElementById('noteAuthorRole').value;
             const author = document.getElementById('noteAuthor').value.trim();
             const statusAfter = document.getElementById('noteStatus').value;
             const date = document.getElementById('noteDate').value;
@@ -2362,6 +2396,7 @@
             }
 
             localStorage.setItem(AUTHOR_STORAGE_KEY, author);
+            localStorage.setItem(ROLE_STORAGE_KEY, role);
 
             const newNote = {
                 id: Date.now(),

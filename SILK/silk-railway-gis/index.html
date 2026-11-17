@@ -745,7 +745,7 @@
     </div>
 
     <!-- KONTENER POWIADOMIEŃ TOAST -->
-    <div id="toastContainer" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[1300] flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toastContainer" class="fixed inset-0 z-[1300] flex items-center justify-center pointer-events-none"></div>
 
     <script>
         // =========================================================================
@@ -1990,7 +1990,7 @@
             closeDeviceDetails();
             renderAll();
             updateFileStatusUI('loaded_readonly');
-            showToast(currentLang === 'en' ? 'Downloaded empty silk_assets.json!' : 'Pobrano pusty plik silk_assets.json!', 'success');
+            showToast(currentLang === 'en' ? 'Pomyślnie zapisano plik bazy danych .json!' : 'Pomyślnie zapisano plik bazy danych .json!', 'success');
         }
 
         async function persistChangesToExternalFile(forceDownloadFallback = false) {
@@ -2005,6 +2005,7 @@
                     await writable.close();
                     unsavedChangesCount = 0;
                     updateFileStatusUI('connected_saved');
+                    showToast(currentLang === 'en' ? 'Pomyślnie zapisano plik bazy danych .json!' : 'Pomyślnie zapisano plik bazy danych .json!', 'success');
                     return true;
                 } catch (err) {
                     console.warn('Auto-save handle warning:', err);
@@ -2015,12 +2016,7 @@
                 triggerBrowserDownload(jsonString, connectedFileName || 'silk_assets.json');
                 unsavedChangesCount = 0;
                 updateFileStatusUI('loaded_readonly');
-                showToast(
-                    currentLang === 'en'
-                        ? `Downloaded updated ${connectedFileName || 'silk_assets.json'}!`
-                        : `Pobrano zaktualizowany plik ${connectedFileName || 'silk_assets.json'}!`,
-                    'success'
-                );
+                showToast(currentLang === 'en' ? 'Pomyślnie zapisano plik bazy danych .json!' : 'Pomyślnie zapisano plik bazy danych .json!', 'success');
                 return true;
             }
 
@@ -2030,15 +2026,7 @@
         }
 
         async function saveOrDownloadFile(forceDownload = true) {
-            const saved = await persistChangesToExternalFile(forceDownload);
-            if (saved && connectedFileHandle) {
-                showToast(
-                    currentLang === 'en'
-                        ? `Saved all changes in ${connectedFileName}!`
-                        : `Zapisano wszystkie zmiany w pliku ${connectedFileName}!`,
-                    'success'
-                );
-            }
+            await persistChangesToExternalFile(forceDownload);
         }
 
         function updateFileStatusUI(state) {
@@ -2086,12 +2074,22 @@
             }
         }
 
-        function triggerBrowserDownload(content, filename) {
+        function triggerBrowserDownload(content, filename = 'silk_assets.json') {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            const timestamp = `${day}-${month}-${year}_${hours}-${minutes}`;
+            const dynamicFilename = filename.replace('silk_assets.json', `silk_${timestamp}_assets.json`);
+
             const blob = new Blob([content], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = filename;
+            a.download = dynamicFilename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -2415,13 +2413,7 @@
             setNowInNoteForm();
 
             renderAll();
-            const saved = await persistChangesToExternalFile(false);
-            showToast(
-                saved
-                    ? (currentLang === 'en' ? `Entry added & saved in ${connectedFileName}!` : `Dodano wpis i zapisano w ${connectedFileName}!`)
-                    : (currentLang === 'en' ? 'Entry added to maintenance log!' : 'Dodano wpis do dziennika napraw!'),
-                'success'
-            );
+            await persistChangesToExternalFile(false);
         }
 
         async function deleteRepairNote(noteId) {
@@ -2431,13 +2423,7 @@
 
             dev.notes = dev.notes.filter(n => n.id !== noteId);
             renderAll();
-            const saved = await persistChangesToExternalFile(false);
-            showToast(
-                saved
-                    ? (currentLang === 'en' ? `Entry deleted & updated ${connectedFileName}.` : `Usunięto wpis i zaktualizowano ${connectedFileName}.`)
-                    : (currentLang === 'en' ? 'Entry deleted.' : 'Usunięto wpis z dziennika.'),
-                'info'
-            );
+            await persistChangesToExternalFile(false);
         }
 
         function renderNotesHistory(dev) {
@@ -2632,13 +2618,7 @@
                 if (dev) {
                     dev.image = base64;
                     renderDeviceDetails(dev);
-                    const saved = await persistChangesToExternalFile(false);
-                    showToast(
-                        saved
-                            ? (currentLang === 'en' ? `Photo updated in ${connectedFileName}!` : `Zaktualizowano zdjęcie w pliku ${connectedFileName}!`)
-                            : (currentLang === 'en' ? 'Asset photo updated!' : 'Zaktualizowano zdjęcie obiektu!'),
-                        'success'
-                    );
+                    await persistChangesToExternalFile(false);
                 }
             } catch (err) {
                 showToast(currentLang === 'en' ? 'Failed to process image.' : 'Nie udało się przetworzyć pliku obrazu.', 'error');
@@ -2680,13 +2660,7 @@
                 closeDeviceFormModal();
                 renderAll();
                 selectDevice(editingId);
-                const saved = await persistChangesToExternalFile(false);
-                showToast(
-                    saved
-                        ? (currentLang === 'en' ? `Updated "${name}" in ${connectedFileName}!` : `Zaktualizowano „${name}” w ${connectedFileName}!`)
-                        : (currentLang === 'en' ? `Updated "${name}".` : `Zaktualizowano dane obiektu „${name}”.`),
-                    'success'
-                );
+                await persistChangesToExternalFile(false);
             } else {
                 const newDevice = {
                     id: 'SILK-' + String(devices.length + 1).padStart(3, '0') + '-' + String(Date.now()).slice(-3),
@@ -2706,22 +2680,7 @@
                 renderAll();
                 selectDevice(newDevice.id);
 
-                const savedDirectly = await persistChangesToExternalFile(false);
-                if (savedDirectly) {
-                    showToast(
-                        currentLang === 'en'
-                            ? `Added "${name}" and saved directly to ${connectedFileName}!`
-                            : `Dodano „${name}” i zapisano bezpośrednio w ${connectedFileName}!`,
-                        'success'
-                    );
-                } else {
-                    showToast(
-                        currentLang === 'en'
-                            ? `Added "${name}"! Click "Save JSON" to export file.`
-                            : `Dodano „${name}”! Kliknij „Zapisz JSON”, aby zapisać plik.`,
-                        'info'
-                    );
-                }
+                await persistChangesToExternalFile(false);
             }
         }
 
@@ -2731,13 +2690,7 @@
             closeDeviceDetails();
             renderAll();
 
-            const savedDirectly = await persistChangesToExternalFile(false);
-            showToast(
-                savedDirectly
-                    ? (currentLang === 'en' ? `Asset deleted & updated ${connectedFileName}.` : `Usunięto obiekt i zaktualizowano ${connectedFileName}.`)
-                    : (currentLang === 'en' ? 'Asset deleted from list.' : 'Usunięto obiekt z listy.'),
-                'info'
-            );
+            await persistChangesToExternalFile(false);
         }
 
         function fitMapToAllDevices() {
@@ -2873,26 +2826,28 @@
         }
 
         // =========================================================================
-        // 9. NARZĘDZIA POMOCNICZE
+        // 9. NARZĘDZIA POMOCNICZE (KOMUNIKAT NA ŚRODKU EKRANU)
         // =========================================================================
-        function showToast(message, type = 'info') {
+        function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer');
-            const colors = {
-                success: 'bg-emerald-600 text-white',
-                error: 'bg-rose-600 text-white',
-                info: 'bg-slate-900 text-white'
-            };
+            container.innerHTML = ''; // Usuń poprzednie, aby się nie nakładały
 
             const toast = document.createElement('div');
-            toast.className = `${colors[type] || colors.info} px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 animate-fade-slide pointer-events-auto`;
-            toast.textContent = message;
+            toast.className = `bg-slate-900/95 text-white border border-slate-700 px-6 py-4 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-3 backdrop-blur-md animate-fade-slide pointer-events-auto`;
+            
+            toast.innerHTML = `
+                <div class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center shrink-0 font-black text-xs shadow">✓</div>
+                <span>Zapisano plik bazy danych .json</span>
+            `;
 
             container.appendChild(toast);
+            
+            // Automatyczne zniknięcie po 2.2 sekundach
             setTimeout(() => {
                 toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.25s ease';
-                setTimeout(() => toast.remove(), 250);
-            }, 3400);
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 2200);
         }
 
         function escapeHtml(str) {

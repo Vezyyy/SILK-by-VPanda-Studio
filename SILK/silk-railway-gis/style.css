@@ -1,0 +1,167 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+#mapViewport {
+    position: relative;
+    width: 100%;
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+#leafletMapContainer {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 10;
+}
+#sidebarDrawer {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    bottom: 12px;
+    width: 380px;
+    max-width: calc(100vw - 24px);
+    z-index: 1000;
+}
+.drawer-closed {
+    display: none !important;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Marker urządzenia SRK / budynku na mapie */
+.device-map-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 4px 6px rgba(15, 23, 42, 0.35));
+    user-select: none;
+}
+.device-map-marker:hover, .device-map-marker.selected {
+    transform: scale(1.08) translateY(-2px);
+    z-index: 1000 !important;
+}
+.device-circle-icon {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: 9999px;
+    border: 3px solid #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28);
+    pointer-events: auto;
+}
+.device-map-marker.selected .device-circle-icon {
+    border-color: #fde047;
+    box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.45);
+}
+.device-repairs-badge {
+    position: absolute;
+    top: -5px;
+    right: -7px;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    min-width: 19px;
+    height: 19px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid #ffffff;
+}
+.device-pointer-tip {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 7px solid #ffffff;
+    margin-top: -1px;
+}
+.device-map-marker.selected .device-pointer-tip {
+    border-top-color: #fde047;
+}
+.device-name-tag {
+    margin-top: 1px;
+    background: rgba(15, 23, 42, 0.93);
+    padding: 2px 6px;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 3px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+    max-width: 210px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    pointer-events: auto;
+}
+.device-map-marker.selected .device-name-tag {
+    background: #ca8a04;
+    color: #ffffff;
+    border-color: #ffffff;
+}
+
+.leaflet-div-icon {
+    background: transparent !important;
+    border: none !important;
+    pointer-events: none !important;
+}
+
+/* Splash screen ładowania z logo */
+#splashScreen {
+    transition: opacity 0.45s ease, visibility 0.45s ease;
+}
+#splashScreen.splash-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-slide {
+    animation: fadeSlide 0.2s ease-out forwards;
+}
+@keyframes pulseGlow {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+}
+.animate-logo-pulse {
+    animation: pulseGlow 1.8s ease-in-out infinite;
+}

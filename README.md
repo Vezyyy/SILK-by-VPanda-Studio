@@ -17,6 +17,12 @@
 
 ---
 
+<p>
+    <a href="https://vezyyy.github.io/SILK-by-VPanda-Studio/SILK/silk-railway-gis/"><strong>🌐 Open Live Demo (GitHub Pages)</strong></a>
+</p>
+
+---
+
 ## 📌 Overview
 
 **SILK (Spatial Infrastructure & Line Keeper)** is a lightweight, browser-based GIS asset management and maintenance logbook application tailored for railway infrastructure, signaling (SRK), power supply, and GSM-R telecommunication teams[cite: 10, 11].

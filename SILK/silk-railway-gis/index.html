@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SILK by VPanda — Spatial Infrastructure &amp; Line Keeper</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
+
     <!-- Leaflet CSS & JS (Esri / OpenTopoMap — bez znaków wodnych i bez klucza API) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
@@ -203,7 +203,6 @@
     <!-- EKRAN ŁADOWANIA (SPLASH SCREEN Z LOGO Z FOLDERU ASSETS: assets/SILK_Logo) -->
     <div id="splashScreen" class="fixed inset-0 z-[5000] bg-slate-950 flex flex-col items-center justify-center p-6 text-white select-none">
         <div class="flex flex-col items-center max-w-md w-full text-center space-y-5">
-            <!-- Kontener Logo z folderu assets/SILK_Logo -->
             <div id="splashLogoSlot" class="w-24 h-24 rounded-3xl bg-slate-900 border-2 border-amber-400/50 shadow-2xl flex items-center justify-center p-2.5 animate-logo-pulse overflow-hidden">
                 <img src="assets/SILK_Logo.png" alt="SILK by VPanda Logo" class="w-full h-full object-contain" onerror="handleAssetLogoFallback(this)">
             </div>
@@ -218,12 +217,10 @@
                 </p>
             </div>
 
-            <!-- Pasek postępu -->
             <div class="w-64 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700/60">
                 <div id="splashProgressBar" class="h-full bg-gradient-to-r from-amber-400 via-blue-500 to-emerald-400 transition-all duration-300" style="width: 18%;"></div>
             </div>
 
-            <!-- Karta statusu połączenia z serwerem podczas uruchamiania -->
             <div class="w-full max-w-sm bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 text-left space-y-2 shadow-xl">
                 <div class="flex items-center gap-2.5">
                     <span id="splashStep1Icon" class="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px] font-bold">✓</span>
@@ -246,6 +243,68 @@
 
         <div class="absolute bottom-5 text-[11px] text-slate-500 font-semibold tracking-wide">
             Powered by <a href="https://vezyyy.github.io/VPanda/" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-amber-400 font-bold underline decoration-slate-600 hover:decoration-amber-400 transition">VPanda Studio</a>
+        </div>
+    </div>
+
+    <!-- MODAL LOGOWANIA -->
+    <div id="loginModal" class="hidden fixed inset-0 z-[4550] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200 overflow-hidden animate-fade-slide">
+            <div class="bg-slate-900 px-5 py-4 flex items-center justify-between text-white">
+                <div>
+                    <h2 id="loginModalTitle" class="text-base font-black leading-tight" data-i18n="loginModalTitle">Logowanie do systemu SILK</h2>
+                    <p id="loginModalSubtitle" class="text-xs font-medium text-slate-300">SILK by VPanda — Spatial Infrastructure &amp; Line Keeper</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-amber-400 text-slate-950">SRK / AUTH</span>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="p-5 space-y-4 text-xs">
+                <div id="loginOfflineNotice" class="hidden p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 space-y-2.5">
+                    <p class="font-semibold leading-relaxed" data-i18n="loginOfflineDesc">
+                        Brak połączenia z serwerem — możesz uruchomić aplikację lokalnie na pliku .JSON za pomocą przycisku poniżej.
+                    </p>
+                    <button type="button" onclick="enterDemoMode()"
+                        class="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold shadow-xs transition flex items-center justify-center gap-2 cursor-pointer">
+                        <span>🚀</span>
+                        <span data-i18n="demoModeBtn">Tryb Demo</span>
+                    </button>
+                </div>
+
+                <div>
+                    <label for="loginUsernameInput" class="block font-bold text-slate-700 mb-1" data-i18n="loginUserLabel">Login / Użytkownik *</label>
+                    <input type="text" id="loginUsernameInput" required autocomplete="username" placeholder="Wpisz login..."
+                        class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label for="loginPasswordInput" class="block font-bold text-slate-700 mb-1" data-i18n="loginPassLabel">Hasło *</label>
+                    <input type="password" id="loginPasswordInput" required autocomplete="current-password" placeholder="••••••••"
+                        class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="openServerConfigModal()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer" data-i18n="serverSettingsBtn">
+                        Ustawienia serwera
+                    </button>
+                    <button type="submit" id="loginSubmitBtn" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold shadow-sm transition cursor-pointer" data-i18n="loginBtn">
+                        Zaloguj
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POTWIERDZANIA USUNIĘCIA -->
+    <div id="confirmDeleteModal" class="hidden fixed inset-0 z-[4600] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-5 space-y-4 border border-slate-200 animate-fade-slide text-center">
+            <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 mx-auto flex items-center justify-center text-xl font-black">⚠</div>
+            <div class="space-y-1">
+                <h3 id="confirmDeleteTitle" class="text-base font-extrabold text-slate-900">Potwierdź usunięcie</h3>
+                <p id="confirmDeleteText" class="text-xs text-slate-500">Czy na pewno chcesz usunąć ten obiekt?</p>
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+                <button type="button" onclick="closeConfirmDeleteModal()" class="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer" data-i18n="cancelBtn">Anuluj</button>
+                <button type="button" onclick="executeConfirmedDelete()" class="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs transition cursor-pointer" data-i18n="deleteBtn">Usuń</button>
+            </div>
         </div>
     </div>
 
@@ -302,7 +361,7 @@
     </div>
 
     <!-- MODAL KONFIGURACJI SERWERA / TRYBU LOKALNEGO -->
-    <div id="serverConfigModal" class="hidden fixed inset-0 z-[4000] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div id="serverConfigModal" class="hidden fixed inset-0 z-[4700] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200 overflow-hidden animate-fade-slide">
             <div class="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
                 <h3 class="text-sm font-extrabold text-slate-900" data-i18n="serverModalTitle">Połączenie z serwerem i tryb lokalny (.JSON)</h3>
@@ -334,7 +393,6 @@
 
     <!-- GÓRNY PASEK NAWIGACYJNY (56px) — W PEŁNI RESPONSYWNY NA TELEFONIE I DESKTOPIE -->
     <header class="h-14 bg-white border-b border-slate-200 shadow-xs z-30 px-2 sm:px-4 flex items-center justify-between gap-1.5 sm:gap-2 shrink-0">
-        <!-- Lewa strona: Przycisk Menu + Logo assets/SILK_Logo + Tytuł SILK by VPanda -->
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button id="hamburgerBtn" type="button" onclick="toggleDrawer()" class="px-2.5 sm:px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer" data-i18n-title="menuTooltip">
                 <span class="text-sm sm:text-base leading-none font-bold">☰</span>
@@ -358,12 +416,27 @@
                     </p>
                 </div>
 
-                <!-- Klikalny wskaźnik: Serwer / Tryb lokalny -->
                 <button type="button" onclick="openServerConfigModal()" id="serverStatusPill"
                     class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition cursor-pointer shrink-0"
                     title="Kliknij, aby skonfigurować serwer lub sprawdzić połączenie">
                     <span id="serverStatusDot" class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
                     <span id="serverStatusText">Tryb lokalny (.JSON)</span>
+                </button>
+
+                <button type="button" onclick="openLoginModal()" id="currentUserBadge"
+                    class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition cursor-pointer shrink-0"
+                    title="Kliknij, aby zmienić użytkownika lub zalogować">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
+                    <span id="currentUserBadgeText">Tryb Demo</span>
+                </button>
+
+                <button type="button" onclick="logoutUser()" id="logoutBtn"
+                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-bold transition cursor-pointer shrink-0"
+                    data-i18n-title="logoutTooltip" title="Wyloguj się z systemu">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
+                    </svg>
+                    <span class="hidden sm:inline" data-i18n="logoutBtn">Wyloguj</span>
                 </button>
 
                 <div id="fileConnectionBadge" class="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 truncate max-w-[230px]">
@@ -373,7 +446,6 @@
             </div>
         </div>
 
-        <!-- Prawa strona: Płynnie przewijalny na wąskich ekranach pasek akcji -->
         <div class="flex items-center gap-1 sm:gap-1.5 min-w-0 overflow-x-auto no-scrollbar py-1">
             <div class="inline-flex items-center bg-slate-100 border border-slate-200 rounded-xl p-0.5 shrink-0" title="Language / Język">
                 <button id="langBtnPL" type="button" onclick="setLanguage('pl')" class="px-1.5 sm:px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-extrabold bg-slate-900 text-white transition cursor-pointer">PL</button>
@@ -384,7 +456,7 @@
 
             <button type="button" onclick="openAndConnectFile()" class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer shrink-0" data-i18n-title="openFileTooltip">
                 <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"/></svg>
-                <span class="hidden sm:inline" data-i18n="openJsonBtn">Otwórz JSON</span>
+                <span class="hidden sm:inline" data-i18n="openJsonBtn">Scal / Otwórz JSON</span>
             </button>
 
             <button type="button" onclick="createNewEmptyFile()" class="p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shrink-0" data-i18n-title="newFileTooltip">
@@ -405,7 +477,7 @@
 
             <button type="button" onclick="openDeviceFormModal(null)" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition flex items-center gap-1 cursor-pointer shrink-0">
                 <span class="sm:hidden" data-i18n="addDeviceBtnShort">+ Dodaj</span>
-                <span class="hidden sm:inline" data-i18n="addDeviceBtn">+ Dodaj urządzenie</span>
+                <span class="hidden sm:inline" data-i18n="addDeviceBtn">+ Dodaj obiekt / urządzenie</span>
             </button>
         </div>
     </header>
@@ -428,13 +500,13 @@
 
         <!-- PŁYWAJĄCE ZWIJANE MENU BOCZNE (DRAWER) -->
         <aside id="sidebarDrawer" class="bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-            
+
             <!-- WIDOK 1: LISTA URZĄDZEŃ KOLEJOWYCH SRK -->
             <div id="devicesListView" class="flex-1 flex flex-col h-full overflow-hidden">
                 <div class="p-3.5 border-b border-slate-200/80 bg-slate-50/95 space-y-2.5 shrink-0">
                     <div class="flex items-center justify-between gap-2">
                         <span class="text-xs font-extrabold uppercase tracking-wider text-slate-600">
-                            <span data-i18n="devicesHeader">Urządzenia SRK</span> (<span id="devicesCount">0</span>)
+                            <span data-i18n="devicesHeader">Obiekty i urządzenia SRK</span> (<span id="devicesCount">0</span>)
                         </span>
                         <div class="flex items-center gap-1.5">
                             <button type="button" onclick="fitMapToAllDevices()" class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-blue-50 transition cursor-pointer">
@@ -488,7 +560,7 @@
                         <button type="button" onclick="openEditCurrentDeviceModal()" class="px-2 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold transition cursor-pointer" data-i18n="editBtn">
                             Edytuj
                         </button>
-                        <button type="button" onclick="deleteSelectedDevice()" class="px-2 py-1 text-rose-600 hover:bg-rose-50 rounded-lg text-[11px] font-semibold transition cursor-pointer" data-i18n="deleteBtn">
+                        <button type="button" onclick="confirmDeleteSelectedDevice()" class="px-2 py-1 text-rose-600 hover:bg-rose-50 rounded-lg text-[11px] font-semibold transition cursor-pointer" data-i18n="deleteBtn">
                             Usuń
                         </button>
                         <button type="button" onclick="closeDrawer()" class="px-2 py-1 rounded-lg bg-slate-200/80 hover:bg-slate-300/80 text-slate-800 text-[11px] font-extrabold transition cursor-pointer">
@@ -501,7 +573,7 @@
                     <div class="relative h-44 w-full bg-slate-800 overflow-hidden">
                         <img id="detailImage" src="" alt="Asset photo" class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/35 to-transparent"></div>
-                        
+
                         <div class="absolute top-3 left-3 flex items-center gap-2">
                             <span id="detailTypeBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/95 text-slate-900 text-[11px] font-bold shadow-xs">
                                 Typ urządzenia
@@ -524,7 +596,6 @@
                     </div>
 
                     <div class="p-4 space-y-4">
-                        <!-- Przycisk bezpośredniej nawigacji GPS w Google Maps -->
                         <a id="detailGoogleMapsNavBtn" href="https://www.google.com/maps/dir/?api=1&destination=54.3558,18.6442" target="_blank" rel="noopener noreferrer"
                             class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-sm transition flex items-center justify-center gap-2">
                             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
@@ -589,6 +660,12 @@
                                     <textarea id="noteContent" rows="2" required placeholder="np. Przegląd urządzeń nastawczych w budynku nastawni / LCS, regulacja suwaków kontrolnych napędu EOR." class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
                                 </div>
 
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-700 mb-1" data-i18n="notePhotoLabel">Zdjęcia usterki / serwisu (opcjonalnie, wiele plików)</label>
+                                    <input type="file" id="notePhotoFile" accept="image/*" multiple onchange="handleNotePhotoPreview(event)" class="block w-full text-xs text-slate-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-100 file:text-blue-800 cursor-pointer">
+                                    <div id="notePhotosPreviewGrid" class="hidden grid grid-cols-4 gap-2 mt-2"></div>
+                                </div>
+
                                 <button type="submit" class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
                                     <span data-i18n="addEntryBtn">Dodaj wpis i zapisz w pliku</span>
                                 </button>
@@ -620,17 +697,31 @@
             <button type="button" onclick="cancelMapPickMode()" class="ml-1 px-2 py-0.5 bg-blue-800 hover:bg-blue-900 rounded-full text-[11px] cursor-pointer" data-i18n="cancelBtn">Anuluj</button>
         </div>
 
-        <!-- Przełącznik 3 podkładów mapy -->
-        <div class="absolute bottom-3 right-3 z-[800] bg-white/95 backdrop-blur border border-slate-200 shadow-lg rounded-xl p-1 flex flex-wrap gap-1">
-            <button id="btnLayerStreet" type="button" onclick="switchMapLayer('street')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white transition cursor-pointer" data-i18n="layerStreet">
-                Mapa (Esri)
-            </button>
-            <button id="btnLayerSat" type="button" onclick="switchMapLayer('sat')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer" data-i18n="layerSat">
-                Satelita (Esri)
-            </button>
-            <button id="btnLayerTopo" type="button" onclick="switchMapLayer('topo')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer" data-i18n="layerTopo">
-                Tory / Topo
-            </button>
+        <!-- PRZEŁĄCZNIK PODKŁADÓW MAPY (MOBILNY DROPDOWN + DESKTOP PASKOWY) -->
+        <div class="absolute bottom-3 right-3 z-[800]">
+            <div class="md:hidden relative">
+                <button type="button" onclick="toggleMobileLayerMenu()" class="bg-white/95 backdrop-blur border border-slate-200 shadow-xl rounded-2xl px-3.5 py-2.5 text-xs font-extrabold text-slate-900 flex items-center gap-2 cursor-pointer">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    <span data-i18n="mapLayersBtn">Warstwa mapy</span>
+                </button>
+                <div id="mobileLayerDropdown" class="hidden absolute bottom-full right-0 mb-2 bg-white/95 backdrop-blur border border-slate-200 shadow-2xl rounded-2xl p-1.5 flex flex-col gap-1 w-44 animate-fade-slide">
+                    <button id="mBtnLayerStreet" type="button" onclick="switchMapLayer('street'); toggleMobileLayerMenu();" class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white text-left transition cursor-pointer" data-i18n="layerStreet">Mapa (Esri)</button>
+                    <button id="mBtnLayerSat" type="button" onclick="switchMapLayer('sat'); toggleMobileLayerMenu();" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 text-left transition cursor-pointer" data-i18n="layerSat">Satelita (Esri)</button>
+                    <button id="mBtnLayerTopo" type="button" onclick="switchMapLayer('topo'); toggleMobileLayerMenu();" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 text-left transition cursor-pointer" data-i18n="layerTopo">Tory / Topo</button>
+                </div>
+            </div>
+
+            <div class="hidden md:flex bg-white/95 backdrop-blur border border-slate-200 shadow-lg rounded-xl p-1 flex-wrap gap-1">
+                <button id="btnLayerStreet" type="button" onclick="switchMapLayer('street')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white transition cursor-pointer" data-i18n="layerStreet">
+                    Mapa (Esri)
+                </button>
+                <button id="btnLayerSat" type="button" onclick="switchMapLayer('sat')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer" data-i18n="layerSat">
+                    Satelita (Esri)
+                </button>
+                <button id="btnLayerTopo" type="button" onclick="switchMapLayer('topo')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer" data-i18n="layerTopo">
+                    Tory / Topo
+                </button>
+            </div>
         </div>
 
         <div id="leafletMapContainer"></div>
@@ -744,8 +835,16 @@
         </div>
     </div>
 
-    <!-- KONTENER POWIADOMIEŃ TOAST -->
-    <div id="toastContainer" class="fixed inset-0 z-[1300] flex items-center justify-center pointer-events-none"></div>
+    <!-- MODAL PODGLĄDU ZDJĘCIA NA PEŁNYM EKRANIE (LIGHTBOX) -->
+    <div id="imageLightboxModal" onclick="closeImageLightbox()" class="hidden fixed inset-0 z-[4800] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 cursor-zoom-out">
+        <button type="button" onclick="closeImageLightbox()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 text-white text-lg font-bold flex items-center justify-center transition cursor-pointer">
+            ✕
+        </button>
+        <img id="lightboxImageEl" src="" alt="Podgląd zdjęcia" onclick="event.stopPropagation()" class="max-w-full max-h-[90vh] rounded-2xl shadow-2xl border border-white/15 object-contain cursor-default animate-fade-slide">
+    </div>
+
+    <!-- KONTENER POWIADOMIEŃ TOAST NA ŚRODKU EKRANU -->
+    <div id="toastContainer" class="fixed inset-0 z-[1300] flex items-center justify-center pointer-events-none px-4"></div>
 
     <script>
         // =========================================================================
@@ -791,6 +890,14 @@
                 splashStatusConnecting: 'Łączenie z serwerem ewidencji SRK...',
                 splashStatusOfflineReady: 'Tryb lokalny aktywny — wczytano dane z pamięci / pliku .JSON. Uruchamianie...',
                 splashStatusOnlineReady: 'Połączono z serwerem! Uruchamianie mapy...',
+                loginModalTitle: 'Logowanie do systemu SILK',
+                loginOfflineDesc: 'Brak połączenia z serwerem — możesz uruchomić aplikację lokalnie na pliku .JSON za pomocą przycisku poniżej.',
+                demoModeBtn: 'Tryb Demo',
+                loginUserLabel: 'Login / Użytkownik *',
+                loginUserPlaceholder: 'Wpisz login...',
+                loginPassLabel: 'Hasło *',
+                serverSettingsBtn: 'Ustawienia serwera',
+                loginBtn: 'Zaloguj',
                 serverPillOnline: 'Serwer online',
                 serverPillLocal: 'Tryb lokalny (.JSON)',
                 serverModalTitle: 'Połączenie z serwerem i tryb lokalny (.JSON)',
@@ -812,20 +919,20 @@
                 menuBtn: 'Menu',
                 menuTooltip: 'Pokaż lub schowaj panel boczny z listą obiektów i urządzeń',
                 logoTooltip: 'Logo aplikacji: assets/SILK_Logo (kliknij, aby podmienić lokalnie)',
-                openJsonBtn: 'Otwórz JSON',
-                openFileTooltip: 'Wczytaj plik silk_assets.json z dysku i podepnij do autozapisu',
+                openJsonBtn: 'Scal / Otwórz JSON',
+                openFileTooltip: 'Wczytaj plik .json z dysku, scal z obecną bazą i podepnij do autozapisu',
                 newJsonBtn: 'Nowy JSON',
-                newFileTooltip: 'Utwórz czysty plik silk_assets.json na dysku',
+                newFileTooltip: 'Utwórz czysty plik bazy danych .json na dysku',
                 saveJsonBtn: 'Zapisz JSON',
-                saveFileTooltip: 'Zapisz zmiany w pliku silk_assets.json',
+                saveFileTooltip: 'Zapisz zmiany do pliku bazy danych .json',
                 addDeviceBtn: '+ Dodaj obiekt / urządzenie',
                 addDeviceBtnShort: '+ Dodaj',
                 expandListBtn: 'Rozwiń listę SRK',
                 devicesHeader: 'Obiekty i urządzenia SRK',
                 showAllBtn: 'Pokaż wszystkie',
                 collapseBtn: '✕ Zwiń',
-                searchPlaceholder: 'Szukaj nastawni, LCS, rozjazdu, SHP, balisy, km...',
-                allTypesOption: 'Wszystkie obiekty i urządzenia kolejowe (19 typów)',
+                searchPlaceholder: 'Szukaj nastawni, LCS, kontenera, przejazdu, km...',
+                allTypesOption: 'Wszystkie obiekty i urządzenia kolejowe (21 typów)',
                 filterAll: 'Wszystkie',
                 filterOk: 'Sprawne',
                 filterWarn: 'Monitorować',
@@ -840,29 +947,31 @@
                 repairLogTitle: 'Dziennik napraw i usterek SRK',
                 nowBtn: 'Teraz',
                 roleLabel: 'Stanowisko / Rola *',
-                authorLabel: 'Automatyk / Technik *',
-                authorPlaceholder: 'np. Jan Kowalski (Automatyk SRK)',
+                authorLabel: 'Autor wpisu / Stanowisko *',
+                authorPlaceholder: 'np. Jan Kowalski (Automatyk)',
                 statusAfterLabel: 'Status po czynnościach',
                 dateLabel: 'Data *',
                 timeLabel: 'Godzina *',
                 noteContentLabel: 'Opis usterki i wykonanych czynności *',
                 notePlaceholder: 'np. Przegląd urządzeń nastawczych w budynku nastawni / LCS, regulacja suwaków kontrolnych napędu EOR.',
+                notePhotoLabel: 'Zdjęcie usterki / serwisu (opcjonalnie)',
                 addEntryBtn: 'Dodaj wpis i zapisz w pliku',
                 serviceHistoryTitle: 'Historia czynności serwisowych',
-                mapQuickHint: 'Kliknij dowolne miejsce na mapie, aby dodać Nastawnię, LCS lub urządzenie SRK',
+                mapQuickHint: 'Kliknij dowolne miejsce na mapie, aby dodać Nastawnię, LCS, kontener lub urządzenie',
                 mapClickBannerText: 'Kliknij miejsce na mapie, aby ustawić pozycję GPS obiektu',
                 cancelBtn: 'Anuluj',
+                mapLayersBtn: 'Warstwa mapy',
                 layerStreet: 'Mapa (Esri)',
                 layerSat: 'Satelita (Esri)',
                 layerTopo: 'Tory / Topo',
                 modalAddTitle: 'Dodaj obiekt lub urządzenie kolejowe',
                 modalEditTitle: 'Edytuj obiekt:',
-                modalSubtitle: 'Wybierz budynek Nastawni, LCS lub urządzenie SRK i zapisz w pliku silk_assets.json',
-                formTypeLabel: '1. Typ obiektu lub urządzenia kolejowego (Nastawnia, LCS, SRK, GSM-R) *',
+                modalSubtitle: 'Wybierz kategorię obiektu lub urządzenia SRK i zapisz w bazie danych .json',
+                formTypeLabel: '1. Typ obiektu lub urządzenia kolejowego *',
                 formNameLabel: '2. Nazwa obiektu / urządzenia kolejowego *',
-                formNamePlaceholder: 'np. Nastawnia dysponująca Gd / LCS Gdańsk / Rozjazd Rz-12',
+                formNamePlaceholder: 'np. Nastawnia dysponująca Gd / Kontener SRK / Przejazd niestrzeżony',
                 formInvLabel: 'Oznaczenie / Nr inwent.',
-                formInvPlaceholder: 'np. Gd / LCS-1 / Rz-12',
+                formInvPlaceholder: 'np. Gd / K-SRK-1 / Rz-12',
                 formStatusLabel: 'Status obiektu',
                 formLatLabel: 'Szerokość GPS (Lat) *',
                 formLngLabel: 'Długość GPS (Lng) *',
@@ -873,9 +982,9 @@
                 saveDeviceBtn: 'Zapisz obiekt w pliku',
                 saveEditBtn: 'Zapisz zmiany w pliku',
                 emptyTitle: 'Brak obiektów i urządzeń na mapie',
-                emptyDesc: 'Kliknij dowolne miejsce na mapie, aby dodać <strong>Nastawnię</strong>, <strong>LCS</strong>, <strong>rozjazd</strong> lub <strong>balisę ETCS</strong>, albo wczytaj plik <code>silk_assets.json</code>.',
+                emptyDesc: 'Kliknij dowolne miejsce na mapie, aby dodać <strong>Nastawnię</strong>, <strong>LCS</strong>, <strong>kontener</strong> lub <strong>przejazd</strong>, albo scal plik <code>.json</code>.',
                 emptyAddBtn: '+ Dodaj pierwszy obiekt kolejowy',
-                emptyOpenBtn: 'Otwórz plik silk_assets.json',
+                emptyOpenBtn: 'Scal / Otwórz plik .json',
                 noFilterTitle: 'Brak obiektów spełniających kryteria',
                 noFilterDesc: 'Zmień wyszukiwaną frazę lub filtr typu/statusu.',
                 lastEntryPrefix: 'Ostatni wpis:',
@@ -901,7 +1010,8 @@
                 gpsActive: 'GPS aktywny',
                 addAtGpsBtn: '+ Dodaj w miejscu GPS',
                 gpsError: 'Brak sygnału GPS lub brak zgody na lokalizację',
-                gpsBannerText: 'Twoja pozycja GPS jest śledzona na mapie'
+                gpsBannerText: 'Twoja pozycja GPS jest śledzona na mapie',
+                savedDbToast: 'Zapisano plik bazy danych .json'
             },
             en: {
                 splashStep1: '1. Loading map modules and application logo',
@@ -915,6 +1025,16 @@
                 splashStatusConnecting: 'Connecting to railway asset server...',
                 splashStatusOfflineReady: 'Local mode active — loaded from local storage / .JSON file. Launching...',
                 splashStatusOnlineReady: 'Connected to server! Launching map...',
+                loginModalTitle: 'Sign in to SILK System',
+                loginOfflineDesc: 'No server connection — you can launch the app locally using .JSON storage with the button below.',
+                demoModeBtn: 'Demo Mode',
+                loginUserLabel: 'Username *',
+                loginUserPlaceholder: 'Enter username...',
+                loginPassLabel: 'Password *',
+                serverSettingsBtn: 'Server Settings',
+                loginBtn: 'Sign In',
+                logoutBtn: 'Log out',
+                logoutTooltip: 'Sign out of the system',
                 serverPillOnline: 'Server Online',
                 serverPillLocal: 'Local Mode (.JSON)',
                 serverModalTitle: 'Server Connection & Local Mode (.JSON)',
@@ -936,20 +1056,20 @@
                 menuBtn: 'Menu',
                 menuTooltip: 'Show or hide the railway assets sidebar',
                 logoTooltip: 'App logo: assets/SILK_Logo (click to override locally)',
-                openJsonBtn: 'Open JSON',
-                openFileTooltip: 'Load silk_assets.json from disk and link for auto-save',
+                openJsonBtn: 'Merge / Open JSON',
+                openFileTooltip: 'Load .json from disk, merge with current assets, and link for auto-save',
                 newJsonBtn: 'New JSON',
-                newFileTooltip: 'Create a new empty silk_assets.json file on disk',
+                newFileTooltip: 'Create a new empty .json database file on disk',
                 saveJsonBtn: 'Save JSON',
-                saveFileTooltip: 'Save all changes to silk_assets.json',
+                saveFileTooltip: 'Save all changes to .json database file',
                 addDeviceBtn: '+ Add Asset',
                 addDeviceBtnShort: '+ Add',
                 expandListBtn: 'Expand Asset List',
                 devicesHeader: 'Railway Buildings & Assets',
                 showAllBtn: 'Fit all',
                 collapseBtn: '✕ Hide',
-                searchPlaceholder: 'Search signal box, LCS, turnout, AWS/SHP, balise, km...',
-                allTypesOption: 'All Railway Buildings, Signaling & Telecom Assets (19 types)',
+                searchPlaceholder: 'Search signal box, LCS, container, crossing, km...',
+                allTypesOption: 'All Railway Buildings, Signaling & Telecom Assets (21 types)',
                 filterAll: 'All',
                 filterOk: 'Operational',
                 filterWarn: 'Monitor',
@@ -964,29 +1084,31 @@
                 repairLogTitle: 'Maintenance & Fault Logbook',
                 nowBtn: 'Now',
                 roleLabel: 'Role / Position *',
-                authorLabel: 'Technician / Engineer *',
+                authorLabel: 'Author / Position *',
                 authorPlaceholder: 'e.g. John Doe (Signaling Engineer)',
                 statusAfterLabel: 'Status after service',
                 dateLabel: 'Date *',
                 timeLabel: 'Time *',
                 noteContentLabel: 'Fault & Maintenance Description *',
                 notePlaceholder: 'e.g. Signal box / LCS interlocking rack inspection, point machine detection rods adjusted.',
+                notePhotoLabel: 'Fault / service photo (optional)',
                 addEntryBtn: 'Add Log Entry & Save',
                 serviceHistoryTitle: 'Maintenance & Fault History',
-                mapQuickHint: 'Click anywhere on the map to add a Signal Box, LCS Center, or Railway Asset',
+                mapQuickHint: 'Click anywhere on the map to add a Signal Box, LCS Center, Container, or Railway Asset',
                 mapClickBannerText: 'Click on the map to set the GPS position of the building / asset',
                 cancelBtn: 'Cancel',
+                mapLayersBtn: 'Map Layer',
                 layerStreet: 'Street Map (Esri)',
                 layerSat: 'Satellite (Esri)',
                 layerTopo: 'Rail / Topo',
                 modalAddTitle: 'Add Railway Building or Asset',
                 modalEditTitle: 'Edit Asset:',
-                modalSubtitle: 'Select a Signal Box, LCS Control Center, or signaling asset and save to silk_assets.json',
-                formTypeLabel: '1. Building or Asset Type (Signal Box, LCS, Signaling, Telecom) *',
+                modalSubtitle: 'Select a building, container, crossing, or signaling asset and save to .json',
+                formTypeLabel: '1. Building or Asset Type *',
                 formNameLabel: '2. Building / Asset Name *',
-                formNamePlaceholder: 'e.g. Main Signal Box Gd / LCS Control Center / Turnout T-12',
+                formNamePlaceholder: 'e.g. Main Signal Box Gd / SRK Container / Passive Crossing',
                 formInvLabel: 'Code / Asset ID',
-                formInvPlaceholder: 'e.g. Gd / LCS-1 / T-12',
+                formInvPlaceholder: 'e.g. Gd / K-SRK-1 / T-12',
                 formStatusLabel: 'Operational Status',
                 formLatLabel: 'Latitude (GPS) *',
                 formLngLabel: 'Longitude (GPS) *',
@@ -997,16 +1119,16 @@
                 saveDeviceBtn: 'Save Asset to File',
                 saveEditBtn: 'Save Changes to File',
                 emptyTitle: 'No railway buildings or assets on the map yet',
-                emptyDesc: 'Click anywhere on the map to add a <strong>Signal Box</strong>, <strong>LCS Center</strong>, <strong>turnout</strong>, or <strong>ETCS balise</strong>, or open <code>silk_assets.json</code>.',
+                emptyDesc: 'Click anywhere on the map to add a <strong>Signal Box</strong>, <strong>LCS Center</strong>, <strong>container</strong>, or <strong>crossing</strong>, or merge a <code>.json</code> file.',
                 emptyAddBtn: '+ Add First Railway Asset',
-                emptyOpenBtn: 'Open silk_assets.json',
+                emptyOpenBtn: 'Merge / Open .json file',
                 noFilterTitle: 'No matching assets found',
                 noFilterDesc: 'Try adjusting your search query or type/status filter.',
                 lastEntryPrefix: 'Last entry:',
                 noNotesItem: 'No maintenance entries yet',
                 noNotesHistoryTitle: 'No maintenance or fault entries for this asset.',
                 noNotesHistoryDesc: 'Use the form above to record a maintenance action.',
-                technicianPrefix: 'Role / Author:',
+                technicianPrefix: 'Author / Role:',
                 photoPlaceholderHint: 'Click "Change photo" to upload a building or asset photograph',
                 statusOk: 'Operational',
                 statusWarn: 'Monitor',
@@ -1025,7 +1147,8 @@
                 gpsActive: 'GPS Active',
                 addAtGpsBtn: '+ Add at GPS',
                 gpsError: 'GPS signal unavailable or location permission denied',
-                gpsBannerText: 'Your GPS position is tracked on the map'
+                gpsBannerText: 'Your GPS position is tracked on the map',
+                savedDbToast: 'Saved .json database file'
             }
         };
 
@@ -1034,9 +1157,23 @@
         }
 
         // =========================================================================
-        // 2. KATALOG 19 OBIEKTÓW I URZĄDZEŃ KOLEJOWYCH (NASTAWNIE, LCS, SRK, GSM-R)
+        // 2. KATALOG 21 OBIEKTÓW I URZĄDZEŃ KOLEJOWYCH
         // =========================================================================
         const DEVICE_ICONS = {
+            kontener: {
+                pl: 'Kontener techniczny / Szafa aparaturowa',
+                en: 'Technical Container / Equipment Shelter',
+                hint_pl: 'Wolnostojący kontener techniczny lub budynek kontenerowy SRK / telefoniczny.',
+                hint_en: 'Modular equipment shelter or technical container.',
+                svg: `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 6v12M17 6v12"/><path d="M10 12h4"/></svg>`
+            },
+            przejazd_pasywny: {
+                pl: 'Przejazd kolejowo-drogowy (Nie-SSP)',
+                en: 'Level Crossing (Non-SSP)',
+                hint_pl: 'Przejazd niestrzeżony (krzyż św. Andrzeja, brak zapór/SSP).',
+                hint_en: 'Passive level crossing with St. Andrew’s cross (non-SSP).',
+                svg: `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4.5 5.5l15 13"/><path d="M19.5 5.5l-15 13"/><path d="M12 11v8"/></svg>`
+            },
             nastawnia: {
                 pl: 'Nastawnia (dysponująca / wykonawcza)',
                 en: 'Signal Box / Interlocking Tower',
@@ -1294,7 +1431,7 @@
         }
 
         // =========================================================================
-        // 3. STAN APLIKACJI, POŁĄCZENIE Z SERWEREM I PLIK LOKALNY (silk_assets.json)
+        // 3. STAN APLIKACJI, LOGOWANIE, SERWER I PLIK LOKALNY (.json)
         // =========================================================================
         const LOCAL_BACKUP_KEY = 'silk_vpanda_assets_v1';
         const AUTHOR_STORAGE_KEY = 'silk_vpanda_author_v1';
@@ -1303,6 +1440,7 @@
         const LANG_STORAGE_KEY = 'silk_vpanda_lang_v1';
         const TERMS_ACCEPTED_KEY = 'silk_vpanda_terms_accepted_v1';
         const SERVER_URL_STORAGE_KEY = 'silk_vpanda_server_url_v1';
+        const LOGGED_USER_STORAGE_KEY = 'silk_vpanda_logged_user_v1';
 
         let devices = [];
         let selectedDeviceId = null;
@@ -1310,6 +1448,7 @@
 
         let serverEndpointUrl = '';
         let isServerConnected = false;
+        let loggedInUser = '';
 
         let connectedFileHandle = null;
         let connectedFileName = 'silk_assets.json';
@@ -1322,10 +1461,11 @@
         let draftClickMarker = null;
         let isPickingMapCoords = false;
         let formDevicePhotoBase64 = '';
+        let notePhotosBase64 = [];
         let isDrawerOpen = true;
 
         // =========================================================================
-        // 4. SEKWENCJA STARTOWA: LOGO -> PRÓBA POŁĄCZENIA Z SERWEREM -> FALLBACK .JSON
+        // 4. SEKWENCJA STARTOWA: LOGO -> PRÓBA POŁĄCZENIA Z SERWEREM -> LOGOWANIE
         // =========================================================================
         window.addEventListener('DOMContentLoaded', async () => {
             const savedLang = localStorage.getItem(LANG_STORAGE_KEY);
@@ -1339,8 +1479,10 @@
             }
 
             serverEndpointUrl = (localStorage.getItem(SERVER_URL_STORAGE_KEY) ?? DEFAULT_SERVER_ENDPOINT).trim();
+            loggedInUser = (localStorage.getItem(LOGGED_USER_STORAGE_KEY) || '').trim();
 
             applyLanguageToUI();
+            updateLoggedInUserBadge();
             initLeafletMap();
             setNowInNoteForm();
 
@@ -1405,6 +1547,7 @@
                     body: JSON.stringify({
                         system: 'SILK by VPanda',
                         updatedAt: new Date().toISOString(),
+                        user: loggedInUser || 'Demo',
                         devices: devices
                     })
                 });
@@ -1412,6 +1555,7 @@
             } catch (e) {
                 isServerConnected = false;
                 updateServerPillUI();
+                updateLoginModalState();
                 return false;
             }
         }
@@ -1477,7 +1621,122 @@
 
             if (localStorage.getItem(TERMS_ACCEPTED_KEY) !== 'true') {
                 document.getElementById('termsModal').classList.remove('hidden');
+            } else if (!loggedInUser) {
+                openLoginModal();
             }
+        }
+
+        function updateLoginModalState() {
+            const userInput = document.getElementById('loginUsernameInput');
+            const passInput = document.getElementById('loginPasswordInput');
+            const notice = document.getElementById('loginOfflineNotice');
+
+            if (userInput) userInput.value = '';
+            if (passInput) passInput.value = '';
+
+            if (!isServerConnected) {
+                if (notice) notice.classList.remove('hidden');
+            } else {
+                if (notice) notice.classList.add('hidden');
+            }
+        }
+
+        function openLoginModal() {
+            updateLoginModalState();
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+                    document.getElementById('loginModal').classList.add('hidden');
+                }
+
+                function logoutUser() {
+                    loggedInUser = '';
+                    localStorage.removeItem(LOGGED_USER_STORAGE_KEY);
+                    updateLoggedInUserBadge();
+                    openLoginModal();
+                    showToast(
+                        currentLang === 'en' ? 'You have been logged out.' : 'Wylogowano z systemu.',
+                        'info'
+                    );
+                }
+
+        function updateLoggedInUserBadge() {
+            const badgeText = document.getElementById('currentUserBadgeText');
+            if (badgeText) {
+                badgeText.textContent = loggedInUser || t('demoModeBtn');
+            }
+        }
+
+        function enterDemoMode() {
+            loggedInUser = t('demoModeBtn');
+            localStorage.setItem(LOGGED_USER_STORAGE_KEY, loggedInUser);
+            updateLoggedInUserBadge();
+            closeLoginModal();
+            if (leafletMap) leafletMap.invalidateSize();
+            showToast(
+                currentLang === 'en' ? 'Demo Mode enabled (local .JSON).' : 'Uruchomiono Tryb Demo (lokalny plik .JSON).',
+                'info'
+            );
+        }
+
+        async function handleLoginSubmit(event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsernameInput').value.trim();
+            const password = document.getElementById('loginPasswordInput').value;
+
+            if (!username || !password) return;
+
+            if (!isServerConnected || !serverEndpointUrl) {
+                showToast(
+                    currentLang === 'en'
+                        ? 'No server configured — use "Demo Mode" button.'
+                        : 'Brak połączenia z serwerem — użyj przycisku „Tryb Demo”.',
+                    'info'
+                );
+                return;
+            }
+
+            try {
+                const loginUrl = serverEndpointUrl.replace(/\/+$/, '') + '/login';
+                const res = await fetch(loginUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                if (!res.ok) {
+                    showToast(currentLang === 'en' ? 'Invalid server credentials.' : 'Błędny login lub hasło na serwerze.', 'error');
+                    return;
+                }
+            } catch (e) {
+                isServerConnected = false;
+                updateServerPillUI();
+                updateLoginModalState();
+                showToast(
+                    currentLang === 'en'
+                        ? 'Server unreachable — switch to Demo Mode.'
+                        : 'Serwer nie odpowiada — możesz wejść w Trybie Demo.',
+                    'error'
+                );
+                return;
+            }
+
+            loggedInUser = username;
+            localStorage.setItem(LOGGED_USER_STORAGE_KEY, loggedInUser);
+            updateLoggedInUserBadge();
+
+            const authorInput = document.getElementById('noteAuthor');
+            if (authorInput && !authorInput.value.trim()) {
+                const role = document.getElementById('noteAuthorRole').value;
+                authorInput.value = role && role !== 'Inny' ? `${loggedInUser} (${role})` : loggedInUser;
+            }
+
+            closeLoginModal();
+            if (leafletMap) leafletMap.invalidateSize();
+            showToast(
+                currentLang === 'en' ? `Logged in as ${loggedInUser}` : `Zalogowano jako ${loggedInUser}`,
+                'success'
+            );
         }
 
         function updateServerPillUI() {
@@ -1518,6 +1777,7 @@
             if (!url) {
                 isServerConnected = false;
                 updateServerPillUI();
+                updateLoginModalState();
                 closeServerConfigModal();
                 showToast(currentLang === 'en' ? 'Switched to local mode (.JSON).' : 'Przełączono na tryb lokalny (.JSON).', 'info');
                 return;
@@ -1530,6 +1790,7 @@
                 devices = remoteDevices;
                 cacheToLocalStorage();
                 updateServerPillUI();
+                updateLoginModalState();
                 renderAll();
                 if (devices.length > 0) fitMapToAllDevices();
                 closeServerConfigModal();
@@ -1537,6 +1798,7 @@
             } else {
                 isServerConnected = false;
                 updateServerPillUI();
+                updateLoginModalState();
                 closeServerConfigModal();
                 showToast(
                     currentLang === 'en'
@@ -1553,6 +1815,7 @@
             localStorage.removeItem(SERVER_URL_STORAGE_KEY);
             document.getElementById('serverEndpointInput').value = '';
             updateServerPillUI();
+            updateLoginModalState();
             closeServerConfigModal();
             showToast(currentLang === 'en' ? 'Local mode (.JSON) enabled.' : 'Włączono tryb lokalny (.JSON).', 'info');
         }
@@ -1574,7 +1837,11 @@
             if (!cb.checked) return;
             localStorage.setItem(TERMS_ACCEPTED_KEY, 'true');
             document.getElementById('termsModal').classList.add('hidden');
-            if (leafletMap) leafletMap.invalidateSize();
+            if (!loggedInUser) {
+                openLoginModal();
+            } else if (leafletMap) {
+                leafletMap.invalidateSize();
+            }
         }
 
         function reopenTermsModal() {
@@ -1629,6 +1896,7 @@
                 }
             });
 
+            document.getElementById('loginUsernameInput').placeholder = t('loginUserPlaceholder');
             document.getElementById('searchInput').placeholder = t('searchPlaceholder');
             document.getElementById('noteAuthor').placeholder = t('authorPlaceholder');
             document.getElementById('noteContent').placeholder = t('notePlaceholder');
@@ -1640,6 +1908,7 @@
             rebuildTypeAndStatusSelects();
             updateFormIconPreview();
             updateServerPillUI();
+            updateLoggedInUserBadge();
             updateFileStatusUI(lastFileUiState);
         }
 
@@ -1774,6 +2043,10 @@
             });
         }
 
+        function toggleMobileLayerMenu() {
+            document.getElementById('mobileLayerDropdown').classList.toggle('hidden');
+        }
+
         function switchMapLayer(layerName) {
             Object.values(tileLayers).forEach(layer => {
                 if (leafletMap.hasLayer(layer)) leafletMap.removeLayer(layer);
@@ -1788,13 +2061,24 @@
                 topo: 'btnLayerTopo'
             };
 
+            const mobileBtnMap = {
+                street: 'mBtnLayerStreet',
+                sat: 'mBtnLayerSat',
+                topo: 'mBtnLayerTopo'
+            };
+
             Object.entries(btnMap).forEach(([key, btnId]) => {
                 const btn = document.getElementById(btnId);
-                if (!btn) return;
-                if (key === layerName) {
-                    btn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white transition cursor-pointer';
-                } else {
-                    btn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer';
+                if (btn) {
+                    btn.className = (key === layerName)
+                        ? 'px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white transition cursor-pointer'
+                        : 'px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer';
+                }
+                const mBtn = document.getElementById(mobileBtnMap[key]);
+                if (mBtn) {
+                    mBtn.className = (key === layerName)
+                        ? 'px-3 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white text-left transition cursor-pointer'
+                        : 'px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 text-left transition cursor-pointer';
                 }
             });
 
@@ -1824,7 +2108,7 @@
         }
 
         // =========================================================================
-        // 5. WCZYTYWANIE I AUTOZAPIS ZEWNĘTRZNEGO PLIKU (silk_assets.json)
+        // 5. WCZYTYWANIE, SCALANIE I AUTOZAPIS ZEWNĘTRZNEGO PLIKU (.json)
         // =========================================================================
         function loadInitialData() {
             try {
@@ -1858,15 +2142,41 @@
                 lat: parseFloat(raw.lat ?? raw.latitude ?? 54.3558),
                 lng: parseFloat(raw.lng ?? raw.longitude ?? 18.6442),
                 image: String(raw.image || raw.imageUrl || ''),
-                notes: Array.isArray(raw.notes) ? raw.notes.map((n, nIdx) => ({
-                    id: n.id || (Date.now() + nIdx),
-                    date: String(n.date || ''),
-                    time: String(n.time || ''),
-                    author: String(n.author || 'Technician'),
-                    statusAfter: STATUS_STYLES[n.statusAfter] ? n.statusAfter : validStatus,
-                    content: String(n.content || '')
-                })) : []
+                notes: Array.isArray(raw.notes) ? raw.notes.map((n, nIdx) => {
+                    let normalizedPhotos = [];
+                    if (Array.isArray(n.photos)) {
+                        normalizedPhotos = n.photos.filter(Boolean).map(String);
+                    } else if (n.photo) {
+                        normalizedPhotos = [String(n.photo)];
+                    }
+                    return {
+                        id: n.id || (Date.now() + nIdx),
+                        date: String(n.date || ''),
+                        time: String(n.time || ''),
+                        author: String(n.author || 'Technik'),
+                        statusAfter: STATUS_STYLES[n.statusAfter] ? n.statusAfter : validStatus,
+                        content: String(n.content || ''),
+                        photos: normalizedPhotos,
+                        photo: normalizedPhotos[0] || ''
+                    };
+                }) : []
             };
+        }
+
+        function mergeIncomingDevices(incomingList) {
+            let addedCount = 0;
+            incomingList.forEach((raw, idx) => {
+                const norm = normalizeDevice(raw, devices.length + idx);
+                const exists = devices.some(d =>
+                    d.id === norm.id ||
+                    (Math.abs(d.lat - norm.lat) < 0.00001 && Math.abs(d.lng - norm.lng) < 0.00001 && d.name === norm.name)
+                );
+                if (!exists) {
+                    devices.push(norm);
+                    addedCount++;
+                }
+            });
+            return addedCount;
         }
 
         async function openAndConnectFile() {
@@ -1884,7 +2194,7 @@
                     const parsed = JSON.parse(text);
                     const rawList = Array.isArray(parsed) ? parsed : (parsed.devices || []);
 
-                    devices = rawList.map((item, idx) => normalizeDevice(item, idx));
+                    const addedCount = mergeIncomingDevices(rawList);
                     connectedFileHandle = fileHandle;
                     connectedFileName = fileHandle.name;
                     unsavedChangesCount = 0;
@@ -1897,8 +2207,8 @@
                     updateFileStatusUI('connected_saved');
                     showToast(
                         currentLang === 'en'
-                            ? `Linked file: ${connectedFileName} (loaded ${devices.length} assets)`
-                            : `Połączono z plikiem: ${connectedFileName} (wczytano ${devices.length} obiektów)`,
+                            ? `Merged ${addedCount} new assets from ${connectedFileName} (total: ${devices.length})`
+                            : `Scalono ${addedCount} nowych obiektów z ${connectedFileName} (łącznie: ${devices.length})`,
                         'success'
                     );
                     return;
@@ -1918,7 +2228,8 @@
                 try {
                     const parsed = JSON.parse(e.target.result);
                     const rawList = Array.isArray(parsed) ? parsed : (parsed.devices || []);
-                    devices = rawList.map((item, idx) => normalizeDevice(item, idx));
+                    const addedCount = mergeIncomingDevices(rawList);
+
                     connectedFileHandle = null;
                     connectedFileName = file.name;
                     unsavedChangesCount = 0;
@@ -1931,8 +2242,8 @@
                     updateFileStatusUI('loaded_readonly');
                     showToast(
                         currentLang === 'en'
-                            ? `Loaded ${devices.length} assets from ${file.name}.`
-                            : `Wczytano ${devices.length} obiektów z pliku ${file.name}.`,
+                            ? `Merged ${addedCount} new assets from ${file.name} (total: ${devices.length}).`
+                            : `Scalono ${addedCount} nowych obiektów z pliku ${file.name} (łącznie: ${devices.length}).`,
                         'success'
                     );
                 } catch (err) {
@@ -1969,12 +2280,7 @@
                     closeDeviceDetails();
                     renderAll();
                     updateFileStatusUI('connected_saved');
-                    showToast(
-                        currentLang === 'en'
-                            ? `Created & linked new file: ${connectedFileName}`
-                            : `Utworzono i podpięto nowy plik: ${connectedFileName}`,
-                        'success'
-                    );
+                    showToast(t('savedDbToast'), 'success');
                     return;
                 } catch (err) {
                     if (err.name === 'AbortError') return;
@@ -1990,7 +2296,7 @@
             closeDeviceDetails();
             renderAll();
             updateFileStatusUI('loaded_readonly');
-            showToast(currentLang === 'en' ? 'Pomyślnie zapisano plik bazy danych .json!' : 'Pomyślnie zapisano plik bazy danych .json!', 'success');
+            showToast(t('savedDbToast'), 'success');
         }
 
         async function persistChangesToExternalFile(forceDownloadFallback = false) {
@@ -2005,7 +2311,7 @@
                     await writable.close();
                     unsavedChangesCount = 0;
                     updateFileStatusUI('connected_saved');
-                    showToast(currentLang === 'en' ? 'Pomyślnie zapisano plik bazy danych .json!' : 'Pomyślnie zapisano plik bazy danych .json!', 'success');
+                    showToast(t('savedDbToast'), 'success');
                     return true;
                 } catch (err) {
                     console.warn('Auto-save handle warning:', err);
@@ -2016,7 +2322,7 @@
                 triggerBrowserDownload(jsonString, connectedFileName || 'silk_assets.json');
                 unsavedChangesCount = 0;
                 updateFileStatusUI('loaded_readonly');
-                showToast(currentLang === 'en' ? 'Pomyślnie zapisano plik bazy danych .json!' : 'Pomyślnie zapisano plik bazy danych .json!', 'success');
+                showToast(t('savedDbToast'), 'success');
                 return true;
             }
 
@@ -2081,7 +2387,7 @@
             const year = now.getFullYear();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
-            
+
             const timestamp = `${day}-${month}-${year}_${hours}-${minutes}`;
             const dynamicFilename = filename.replace('silk_assets.json', `silk_${timestamp}_assets.json`);
 
@@ -2365,13 +2671,70 @@
             const authorInput = document.getElementById('noteAuthor');
             if (!roleSel || !authorInput) return;
             const role = roleSel.value;
+            const baseName = (loggedInUser && loggedInUser !== t('demoModeBtn')) ? loggedInUser : 'Jan Kowalski';
             if (role === 'Inny') {
                 authorInput.value = '';
                 authorInput.placeholder = 'np. Imię Nazwisko (Stanowisko)';
             } else {
-                const currentName = authorInput.value.replace(/^[^—]+(?:\s*—\s*|\s*\(\s*)/, '').trim();
-                authorInput.value = currentName ? `${currentName} (${role})` : `Jan Kowalski (${role})`;
+                const currentName = authorInput.value.replace(/^[^—]+(?:\s*—\s*|\s*\(\s*)/, '').replace(/\)$/, '').trim();
+                const nameToUse = currentName || baseName;
+                authorInput.value = `${nameToUse} (${role})`;
             }
+        }
+
+       function openImageLightbox(src) {
+            if (!src) return;
+            const modal = document.getElementById('imageLightboxModal');
+            const img = document.getElementById('lightboxImageEl');
+            img.src = src;
+            modal.classList.remove('hidden');
+        }
+
+        function closeImageLightbox() {
+            const modal = document.getElementById('imageLightboxModal');
+            const img = document.getElementById('lightboxImageEl');
+            modal.classList.add('hidden');
+            img.src = '';
+        }
+
+        function renderNotePhotosPreviewGrid() {
+            const grid = document.getElementById('notePhotosPreviewGrid');
+            if (!grid) return;
+            if (notePhotosBase64.length === 0) {
+                grid.innerHTML = '';
+                grid.classList.add('hidden');
+                return;
+            }
+            grid.classList.remove('hidden');
+            grid.innerHTML = notePhotosBase64.map((src, idx) => `
+                <div class="relative group aspect-square rounded-lg overflow-hidden border border-slate-300 bg-slate-100">
+                    <img src="${src}" alt="Podgląd ${idx + 1}" onclick="openImageLightbox('${src}')" class="w-full h-full object-cover cursor-zoom-in">
+                    <button type="button" onclick="removePendingNotePhoto(${idx})" title="Usuń zdjęcie"
+                        class="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white text-[10px] font-bold flex items-center justify-center shadow cursor-pointer">
+                        ✕
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removePendingNotePhoto(index) {
+            notePhotosBase64.splice(index, 1);
+            renderNotePhotosPreviewGrid();
+        }
+
+        async function handleNotePhotoPreview(event) {
+            const files = Array.from(event.target.files || []);
+            if (files.length === 0) return;
+            try {
+                for (const file of files) {
+                    const compressed = await compressImageToBase64(file, 900);
+                    notePhotosBase64.push(compressed);
+                }
+                renderNotePhotosPreviewGrid();
+            } catch (e) {
+                showToast(currentLang === 'en' ? 'Error loading photo preview.' : 'Błąd wczytywania podglądu zdjęcia.', 'error');
+            }
+            event.target.value = '';
         }
 
         async function handleAddRepairNote(event) {
@@ -2396,13 +2759,16 @@
             localStorage.setItem(AUTHOR_STORAGE_KEY, author);
             localStorage.setItem(ROLE_STORAGE_KEY, role);
 
+            const photosCopy = [...notePhotosBase64];
             const newNote = {
                 id: Date.now(),
                 date,
                 time,
                 author,
                 statusAfter,
-                content
+                content,
+                photos: photosCopy,
+                photo: photosCopy[0] || ''
             };
 
             if (!Array.isArray(dev.notes)) dev.notes = [];
@@ -2410,6 +2776,9 @@
             dev.status = statusAfter;
 
             document.getElementById('noteContent').value = '';
+            document.getElementById('notePhotoFile').value = '';
+            notePhotosBase64 = [];
+            renderNotePhotosPreviewGrid();
             setNowInNoteForm();
 
             renderAll();
@@ -2444,6 +2813,19 @@
             container.innerHTML = notes.map(note => {
                 const stCfg = STATUS_STYLES[note.statusAfter] || STATUS_STYLES.OK;
                 const statusLabel = getStatusLabel(note.statusAfter);
+                const photosList = (Array.isArray(note.photos) && note.photos.length > 0)
+                    ? note.photos
+                    : (note.photo ? [note.photo] : []);
+
+                const photosGalleryHtml = photosList.length > 0
+                    ? `<div class="mt-2 grid ${photosList.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} gap-2">
+                        ${photosList.map((src, idx) => `
+                            <img src="${src}" alt="Zdjęcie usterki ${idx + 1}" onclick="openImageLightbox(this.src)"
+                                class="w-full ${photosList.length === 1 ? 'h-36' : 'h-24'} object-cover rounded-lg border border-slate-200 hover:opacity-90 transition cursor-zoom-in">
+                        `).join('')}
+                       </div>`
+                    : '';
+
                 return `
                     <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs space-y-1.5">
                         <div class="flex flex-wrap items-center justify-between gap-2">
@@ -2462,6 +2844,7 @@
                             </div>
                         </div>
                         <p class="text-xs text-slate-800 whitespace-pre-line leading-relaxed">${escapeHtml(note.content)}</p>
+                        ${photosGalleryHtml}
                         <div class="pt-1 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                             <span>${t('technicianPrefix')} <strong class="text-slate-700">${escapeHtml(note.author || '—')}</strong></span>
                         </div>
@@ -2471,8 +2854,28 @@
         }
 
         // =========================================================================
-        // 8. DODAWANIE I EDYCJA OBIEKTU / URZĄDZENIA KOLEJOWEGO
+        // 8. DODAWANIE, EDYCJA I POTWIERDZANIE USUNIĘCIA OBIEKTU
         // =========================================================================
+        function confirmDeleteSelectedDevice() {
+            if (!selectedDeviceId) return;
+            const dev = devices.find(d => d.id === selectedDeviceId);
+            if (!dev) return;
+            document.getElementById('confirmDeleteText').textContent =
+                currentLang === 'en'
+                    ? `Are you sure you want to delete "${dev.name}"?`
+                    : `Czy na pewno chcesz usunąć obiekt „${dev.name}”?`;
+            document.getElementById('confirmDeleteModal').classList.remove('hidden');
+        }
+
+        function closeConfirmDeleteModal() {
+            document.getElementById('confirmDeleteModal').classList.add('hidden');
+        }
+
+        async function executeConfirmedDelete() {
+            closeConfirmDeleteModal();
+            await deleteSelectedDevice();
+        }
+
         function openDeviceFormModal(deviceToEdit = null, clickedLat = null, clickedLng = null) {
             formDevicePhotoBase64 = '';
             document.getElementById('formDevPhotoFile').value = '';
@@ -2691,6 +3094,7 @@
             renderAll();
 
             await persistChangesToExternalFile(false);
+            showToast(currentLang === 'en' ? 'Asset deleted.' : 'Usunięto obiekt.', 'info');
         }
 
         function fitMapToAllDevices() {
@@ -2704,7 +3108,7 @@
         }
 
         // =========================================================================
-        // 10. ŚLEDZENIE GPS NA ŻYWO I DODAWANIE W MIEJSCU POBYTU
+        // 9. ŚLEDZENIE GPS NA ŻYWO I DODAWANIE W MIEJSCU POBYTU
         // =========================================================================
         let isGpsTrackingActive = false;
         let gpsWatchId = null;
@@ -2714,7 +3118,7 @@
 
         function toggleLiveGpsTracking() {
             if (!navigator.geolocation) {
-                showToast(currentLang === 'en' ? 'Geolocation is not supported by your browser.' : 'Geolokalizacja nie jest obsługiwana przez Twoją przeglądarkę.', 'error');
+                showToast(currentLang === 'en' ? 'Geolocation is not supported by your browser.' : 'Geolokalizacja nie jest obsługana przez Twoją przeglądarkę.', 'error');
                 return;
             }
 
@@ -2826,23 +3230,32 @@
         }
 
         // =========================================================================
-        // 9. NARZĘDZIA POMOCNICZE (KOMUNIKAT NA ŚRODKU EKRANU)
+        // 10. NARZĘDZIA POMOCNICZE (KOMUNIKAT NA ŚRODKU EKRANU)
         // =========================================================================
         function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer');
-            container.innerHTML = ''; // Usuń poprzednie, aby się nie nakładały
+            container.innerHTML = '';
+
+            const badgeColors = {
+                success: 'bg-emerald-500 text-slate-950',
+                error: 'bg-rose-500 text-white',
+                info: 'bg-blue-500 text-white'
+            };
+            const icons = {
+                success: '✓',
+                error: '✕',
+                info: 'i'
+            };
 
             const toast = document.createElement('div');
-            toast.className = `bg-slate-900/95 text-white border border-slate-700 px-6 py-4 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-3 backdrop-blur-md animate-fade-slide pointer-events-auto`;
-            
+            toast.className = 'bg-slate-900/95 text-white border border-slate-700 px-6 py-4 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-3 backdrop-blur-md animate-fade-slide pointer-events-auto';
             toast.innerHTML = `
-                <div class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center shrink-0 font-black text-xs shadow">✓</div>
-                <span>Zapisano plik bazy danych .json</span>
+                <div class="w-6 h-6 rounded-full ${badgeColors[type] || badgeColors.success} flex items-center justify-center shrink-0 font-black text-xs shadow">${icons[type] || '✓'}</div>
+                <span>${escapeHtml(message)}</span>
             `;
 
             container.appendChild(toast);
-            
-            // Automatyczne zniknięcie po 2.2 sekundach
+
             setTimeout(() => {
                 toast.style.opacity = '0';
                 toast.style.transition = 'opacity 0.3s ease';
